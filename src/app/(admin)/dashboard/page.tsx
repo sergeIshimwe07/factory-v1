@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -22,9 +21,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import api from "@/lib/api";
 import { useAuthStore } from "@/lib/auth";
-import type { DashboardSummary } from "@/types";
+import { useDashboardStore } from "@/lib/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,22 +33,14 @@ const COLORS = ["#0f172a", "#334155", "#64748b", "#94a3b8", "#cbd5e1"];
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const { summary, isLoading, error, fetchSummary } = useDashboardStore();
 
-  const {
-    data: summary,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<DashboardSummary>({
-    queryKey: ["dashboard"],
-    queryFn: async () => {
-      const { data } = await api.get("/dashboard/summary");
-      return data;
-    },
-  });
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   if (error) {
-    return <ErrorDisplay message="Failed to load dashboard data." onRetry={() => refetch()} />;
+    return <ErrorDisplay message="Failed to load dashboard data." onRetry={() => fetchSummary()} />;
   }
 
   return (
