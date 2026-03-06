@@ -14,7 +14,7 @@ interface ProtectedRouteProps {
 }
 
 const moduleFromPath: Record<string, string> = {
-  "/dashboard": "dashboard",
+  // "/dashboard": "dashboard",
   "/sales": "sales",
   "/inventory": "inventory",
   "/production": "production",
