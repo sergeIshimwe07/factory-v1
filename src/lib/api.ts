@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://127.0.0.1:3658/m1/1215345-1211195-default/api/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
