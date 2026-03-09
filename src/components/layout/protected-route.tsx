@@ -16,14 +16,14 @@ interface ProtectedRouteProps {
 const moduleFromPath: Record<string, string> = {
   // "/dashboard": "dashboard",
   // "/sales": "sales",
-  "/inventory": "inventory",
-  "/production": "production",
-  "/customers": "customers",
-  "/suppliers": "suppliers",
-  "/commissions": "commissions",
-  "/accounting": "accounting",
-  "/reports": "reports",
-  "/users": "users",
+  // "/inventory": "inventory",
+  // "/production": "production",
+  // "/customers": "customers",
+  // "/suppliers": "suppliers",
+  // "/commissions": "commissions",
+  // "/accounting": "accounting",
+  // "/reports": "reports",
+  // "/users": "users",
 };
 
 function getModuleFromPath(pathname: string): string | undefined {
