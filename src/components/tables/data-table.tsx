@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Pagination } from "./pagination";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronRight } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -25,6 +24,30 @@ interface DataTableProps<T> {
   emptyMessage?: string;
 }
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const T = {
+  gold:        "#C9A84C",
+  goldLight:   "#E8C97A",
+  goldDim:     "rgba(201,168,76,0.12)",
+  goldBorder:  "rgba(201,168,76,0.22)",
+  bg:          "#0A0C10",
+  surface:     "#111318",
+  surface2:    "#181C23",
+  surface3:    "#1E2330",
+  border:      "rgba(255,255,255,0.07)",
+  text:        "#F0EDE8",
+  textDim:     "#9CA3AF",
+  textMuted:   "#525866",
+  red:         "#F87171",
+  green:       "#34D399",
+} as const;
+
+const fonts = {
+  display: "'Cormorant Garamond', serif",
+  mono:    "'DM Mono', monospace",
+  body:    "'Outfit', sans-serif",
+};
+
 export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
@@ -35,63 +58,268 @@ export function DataTable<T extends Record<string, unknown>>({
   pageSize = 10,
   onPageChange,
   onRowClick,
-  emptyMessage = "No data found.",
+  emptyMessage = "No records found.",
 }: DataTableProps<T>) {
+
+  // ── Shared wrapper style ──────────────────────────────────────────────────
+  const wrapStyle: React.CSSProperties = {
+    background:  T.surface,
+    border:      `1px solid ${T.border}`,
+    borderTop:   `1px solid ${T.goldBorder}`,
+    fontFamily:  fonts.body,
+    color:       T.text,
+    overflow:    "hidden",
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
+      <div style={wrapStyle}>
+        <SkeletonHeader columns={columns} />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              display:       "grid",
+              gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
+              gap:           "1rem",
+              padding:       "1rem 1.5rem",
+              borderBottom:  `1px solid ${T.border}`,
+              alignItems:    "center",
+              animationDelay: `${i * 55}ms`,
+            }}
+          >
+            {columns.map((col, ci) => (
+              <div
+                key={col.key}
+                style={{
+                  height:           "10px",
+                  background:       T.surface3,
+                  width:            `${48 + ((i * 11 + ci * 17) % 38)}%`,
+                  animation:        "lux-pulse 1.6s ease-in-out infinite",
+                  animationDelay:   `${(i * 60 + ci * 80)}ms`,
+                }}
+              />
+            ))}
+          </div>
         ))}
+        <style>{`
+          @keyframes lux-pulse {
+            0%, 100% { opacity: 0.4; }
+            50%       { opacity: 0.8; }
+          }
+        `}</style>
       </div>
     );
   }
 
+  // ── Empty ─────────────────────────────────────────────────────────────────
+  if (data.length === 0) {
+    return (
+      <div style={wrapStyle}>
+        <SkeletonHeader columns={columns} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "5rem 2rem", textAlign: "center" }}>
+          <div style={{
+            width: 42, height: 42,
+            border: `1px solid ${T.goldBorder}`,
+            background: T.goldDim,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginBottom: "1.25rem",
+          }}>
+            <span style={{ fontFamily: fonts.display, fontSize: "1.5rem", color: T.gold, lineHeight: 1 }}>∅</span>
+          </div>
+          <p style={{ fontFamily: fonts.mono, fontSize: "0.65rem", letterSpacing: "0.18em", textTransform: "uppercase", color: T.textMuted }}>
+            {emptyMessage}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Table ─────────────────────────────────────────────────────────────────
   return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((col) => (
-              <TableHead key={col.key} className={col.className}>
-                {col.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-slate-500">
-                {emptyMessage}
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((item, idx) => (
-              <TableRow
-                key={(item.id as string) || idx}
-                className={onRowClick ? "cursor-pointer" : ""}
-                onClick={() => onRowClick?.(item)}
-              >
-                {columns.map((col) => (
-                  <TableCell key={col.key} className={col.className}>
-                    {col.render ? col.render(item) : (item[col.key] as React.ReactNode)}
-                  </TableCell>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap');
+
+        .lux-row {
+          border-bottom: 1px solid ${T.border};
+          transition: background 0.15s, padding-left 0.15s;
+          position: relative;
+        }
+        .lux-row:last-child { border-bottom: none; }
+        .lux-row:hover { background: ${T.surface2}; }
+        .lux-row.clickable { cursor: pointer; }
+        .lux-row.clickable:hover { padding-left: 0.5rem; }
+
+        .lux-row-accent {
+          position: absolute;
+          left: 0; top: 50%;
+          transform: translateY(-50%);
+          width: 2px;
+          height: 0;
+          background: ${T.gold};
+          transition: height 0.2s ease;
+        }
+        .lux-row.clickable:hover .lux-row-accent { height: 20px; }
+
+        .lux-row-arrow {
+          color: ${T.border};
+          transition: color 0.15s, opacity 0.15s;
+          opacity: 0;
+        }
+        .lux-row.clickable:hover .lux-row-arrow {
+          color: ${T.gold};
+          opacity: 1;
+        }
+
+        .lux-row td {
+          padding: 0.9rem 1.5rem;
+          font-size: 0.83rem;
+          color: ${T.textDim};
+          vertical-align: middle;
+          transition: color 0.15s;
+        }
+        .lux-row:hover td { color: ${T.text}; }
+
+        @keyframes lux-pulse {
+          0%, 100% { opacity: 0.4; }
+          50%       { opacity: 0.8; }
+        }
+      `}</style>
+
+      <div style={wrapStyle}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            {/* Header */}
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+                {columns.map((col, i) => (
+                  <th
+                    key={col.key}
+                    style={{
+                      padding:       "0.75rem 1.5rem",
+                      textAlign:     "left",
+                      fontFamily:    fonts.mono,
+                      fontSize:      "0.6rem",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      color:         T.textMuted,
+                      fontWeight:    400,
+                      whiteSpace:    "nowrap",
+                      userSelect:    "none",
+                      // First header cell gets a gold left border accent
+                      borderLeft:    i === 0 ? `2px solid ${T.gold}` : undefined,
+                    }}
+                    className={col.className}
+                  >
+                    {col.label}
+                  </th>
                 ))}
-              </TableRow>
-            ))
+                {/* Extra th for arrow column */}
+                <th style={{ width: "2rem" }} />
+              </tr>
+            </thead>
+
+            {/* Body */}
+            <tbody>
+              {data.map((item, idx) => {
+                const isClickable = !!onRowClick;
+                return (
+                  <tr
+                    key={(item.id as string) || idx}
+                    className={`lux-row${isClickable ? " clickable" : ""}`}
+                    onClick={() => onRowClick?.(item)}
+                  >
+                    <span className="lux-row-accent" />
+                    {columns.map((col) => (
+                      <td key={col.key} className={col.className}>
+                        {col.render ? col.render(item) : (item[col.key] as React.ReactNode)}
+                      </td>
+                    ))}
+                    <td style={{ paddingRight: "1rem", textAlign: "right", width: "2rem" }}>
+                      {isClickable && (
+                        <ChevronRight size={13} className="lux-row-arrow" style={{ display: "inline-block" }} />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {currentPage !== undefined &&
+          totalPages !== undefined &&
+          onPageChange &&
+          totalPages > 1 && (
+            <div style={{ borderTop: `1px solid ${T.border}`, padding: "0.75rem 1.5rem" }}>
+              <LuxPaginationWrapper>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
+                  onPageChange={onPageChange}
+                />
+              </LuxPaginationWrapper>
+            </div>
           )}
-        </TableBody>
-      </Table>
-      {currentPage !== undefined && totalPages !== undefined && onPageChange && totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-        />
-      )}
+      </div>
+    </>
+  );
+}
+
+// ── Shared skeleton header ────────────────────────────────────────────────────
+function SkeletonHeader<T>({ columns }: { columns: Column<T>[] }) {
+  return (
+    <div
+      style={{
+        display:               "grid",
+        gridTemplateColumns:   `repeat(${columns.length}, 1fr) 2rem`,
+        borderBottom:          `1px solid rgba(255,255,255,0.07)`,
+        background:            "#0A0C10",
+        padding:               "0.75rem 1.5rem",
+        gap:                   "1rem",
+        alignItems:            "center",
+      }}
+    >
+      {columns.map((col, i) => (
+        <span
+          key={col.key}
+          style={{
+            fontFamily:    "'DM Mono', monospace",
+            fontSize:      "0.6rem",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase" as const,
+            color:         "#525866",
+            borderLeft:    i === 0 ? "2px solid #C9A84C" : undefined,
+            paddingLeft:   i === 0 ? "0" : undefined,
+          }}
+        >
+          {col.label}
+        </span>
+      ))}
+      <span />
+    </div>
+  );
+}
+
+// ── Thin wrapper to override any light-mode pagination styles ────────────────
+function LuxPaginationWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display:        "flex",
+        alignItems:     "center",
+        justifyContent: "space-between",
+        fontFamily:     "'DM Mono', monospace",
+        fontSize:       "0.7rem",
+        color:          "#525866",
+      }}
+    >
+      {children}
     </div>
   );
 }
