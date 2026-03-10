@@ -24,22 +24,22 @@ interface DataTableProps<T> {
   emptyMessage?: string;
 }
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Light mode design tokens ─────────────────────────────────────────────────
 const T = {
-  gold:        "#C9A84C",
-  goldLight:   "#E8C97A",
-  goldDim:     "rgba(201,168,76,0.12)",
-  goldBorder:  "rgba(201,168,76,0.22)",
-  bg:          "#0A0C10",
-  surface:     "#111318",
-  surface2:    "#181C23",
-  surface3:    "#1E2330",
-  border:      "rgba(255,255,255,0.07)",
-  text:        "#F0EDE8",
-  textDim:     "#9CA3AF",
-  textMuted:   "#525866",
-  red:         "#F87171",
-  green:       "#34D399",
+  gold:        "#B5611F",
+  goldLight:   "#C2622D",
+  goldDim:     "rgba(181, 97, 31, 0.08)",
+  goldBorder:  "rgba(181, 97, 31, 0.20)",
+  bg:          "#F5F2EE",      // warm stone page bg — used for thead
+  surface:     "#FFFFFF",      // card / panel
+  surface2:    "#F9F7F4",      // hover states
+  surface3:    "#F0EDE8",      // input fills, skeleton bars
+  border:      "rgba(0, 0, 0, 0.07)",
+  text:        "#1C1917",      // stone-900
+  textDim:     "#78716C",      // stone-500
+  textMuted:   "#A8A29E",      // stone-400
+  red:         "#DC2626",
+  green:       "#059669",
 } as const;
 
 const fonts = {
@@ -61,14 +61,14 @@ export function DataTable<T extends Record<string, unknown>>({
   emptyMessage = "No records found.",
 }: DataTableProps<T>) {
 
-  // ── Shared wrapper style ──────────────────────────────────────────────────
   const wrapStyle: React.CSSProperties = {
-    background:  T.surface,
-    border:      `1px solid ${T.border}`,
-    borderTop:   `1px solid ${T.goldBorder}`,
-    fontFamily:  fonts.body,
-    color:       T.text,
-    overflow:    "hidden",
+    background:   T.surface,
+    border:       `1px solid ${T.border}`,
+    borderTop:    `2px solid ${T.gold}`,       // solid terracotta top accent
+    fontFamily:   fonts.body,
+    color:        T.text,
+    overflow:     "hidden",
+    boxShadow:    "0 1px 4px rgba(0,0,0,0.04)",
   };
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -80,24 +80,24 @@ export function DataTable<T extends Record<string, unknown>>({
           <div
             key={i}
             style={{
-              display:       "grid",
+              display:             "grid",
               gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
-              gap:           "1rem",
-              padding:       "1rem 1.5rem",
-              borderBottom:  `1px solid ${T.border}`,
-              alignItems:    "center",
-              animationDelay: `${i * 55}ms`,
+              gap:                 "1rem",
+              padding:             "1rem 1.5rem",
+              borderBottom:        `1px solid ${T.border}`,
+              alignItems:          "center",
             }}
           >
             {columns.map((col, ci) => (
               <div
                 key={col.key}
                 style={{
-                  height:           "10px",
-                  background:       T.surface3,
-                  width:            `${48 + ((i * 11 + ci * 17) % 38)}%`,
-                  animation:        "lux-pulse 1.6s ease-in-out infinite",
-                  animationDelay:   `${(i * 60 + ci * 80)}ms`,
+                  height:         "9px",
+                  borderRadius:   "2px",
+                  background:     T.surface3,
+                  width:          `${48 + ((i * 11 + ci * 17) % 38)}%`,
+                  animation:      "lux-pulse 1.6s ease-in-out infinite",
+                  animationDelay: `${i * 60 + ci * 80}ms`,
                 }}
               />
             ))}
@@ -105,8 +105,8 @@ export function DataTable<T extends Record<string, unknown>>({
         ))}
         <style>{`
           @keyframes lux-pulse {
-            0%, 100% { opacity: 0.4; }
-            50%       { opacity: 0.8; }
+            0%, 100% { opacity: 0.35; }
+            50%       { opacity: 0.75; }
           }
         `}</style>
       </div>
@@ -164,7 +164,7 @@ export function DataTable<T extends Record<string, unknown>>({
         .lux-row.clickable:hover .lux-row-accent { height: 20px; }
 
         .lux-row-arrow {
-          color: ${T.border};
+          color: ${T.textMuted};
           transition: color 0.15s, opacity 0.15s;
           opacity: 0;
         }
@@ -183,14 +183,15 @@ export function DataTable<T extends Record<string, unknown>>({
         .lux-row:hover td { color: ${T.text}; }
 
         @keyframes lux-pulse {
-          0%, 100% { opacity: 0.4; }
-          50%       { opacity: 0.8; }
+          0%, 100% { opacity: 0.35; }
+          50%       { opacity: 0.75; }
         }
       `}</style>
 
       <div style={wrapStyle}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
+
             {/* Header */}
             <thead>
               <tr style={{ borderBottom: `1px solid ${T.border}`, background: T.bg }}>
@@ -204,11 +205,10 @@ export function DataTable<T extends Record<string, unknown>>({
                       fontSize:      "0.6rem",
                       letterSpacing: "0.18em",
                       textTransform: "uppercase",
-                      color:         T.textMuted,
+                      color:         T.textDim,
                       fontWeight:    400,
                       whiteSpace:    "nowrap",
                       userSelect:    "none",
-                      // First header cell gets a gold left border accent
                       borderLeft:    i === 0 ? `2px solid ${T.gold}` : undefined,
                     }}
                     className={col.className}
@@ -216,7 +216,6 @@ export function DataTable<T extends Record<string, unknown>>({
                     {col.label}
                   </th>
                 ))}
-                {/* Extra th for arrow column */}
                 <th style={{ width: "2rem" }} />
               </tr>
             </thead>
@@ -254,7 +253,7 @@ export function DataTable<T extends Record<string, unknown>>({
           totalPages !== undefined &&
           onPageChange &&
           totalPages > 1 && (
-            <div style={{ borderTop: `1px solid ${T.border}`, padding: "0.75rem 1.5rem" }}>
+            <div style={{ borderTop: `1px solid ${T.border}`, padding: "0.75rem 1.5rem", background: T.bg }}>
               <LuxPaginationWrapper>
                 <Pagination
                   currentPage={currentPage}
@@ -271,31 +270,31 @@ export function DataTable<T extends Record<string, unknown>>({
   );
 }
 
-// ── Shared skeleton header ────────────────────────────────────────────────────
+// ── Skeleton header ───────────────────────────────────────────────────────────
 function SkeletonHeader<T>({ columns }: { columns: Column<T>[] }) {
   return (
     <div
       style={{
-        display:               "grid",
-        gridTemplateColumns:   `repeat(${columns.length}, 1fr) 2rem`,
-        borderBottom:          `1px solid rgba(255,255,255,0.07)`,
-        background:            "#0A0C10",
-        padding:               "0.75rem 1.5rem",
-        gap:                   "1rem",
-        alignItems:            "center",
+        display:             "grid",
+        gridTemplateColumns: `repeat(${columns.length}, 1fr) 2rem`,
+        borderBottom:        `1px solid ${T.border}`,
+        background:          T.bg,
+        padding:             "0.75rem 1.5rem",
+        gap:                 "1rem",
+        alignItems:          "center",
       }}
     >
       {columns.map((col, i) => (
         <span
           key={col.key}
           style={{
-            fontFamily:    "'DM Mono', monospace",
+            fontFamily:    fonts.mono,
             fontSize:      "0.6rem",
             letterSpacing: "0.18em",
             textTransform: "uppercase" as const,
-            color:         "#525866",
-            borderLeft:    i === 0 ? "2px solid #C9A84C" : undefined,
-            paddingLeft:   i === 0 ? "0" : undefined,
+            color:         T.textDim,
+            borderLeft:    i === 0 ? `2px solid ${T.gold}` : undefined,
+            paddingLeft:   i === 0 ? "0.5rem" : undefined,
           }}
         >
           {col.label}
@@ -306,7 +305,7 @@ function SkeletonHeader<T>({ columns }: { columns: Column<T>[] }) {
   );
 }
 
-// ── Thin wrapper to override any light-mode pagination styles ────────────────
+// ── Pagination wrapper ────────────────────────────────────────────────────────
 function LuxPaginationWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -314,9 +313,9 @@ function LuxPaginationWrapper({ children }: { children: React.ReactNode }) {
         display:        "flex",
         alignItems:     "center",
         justifyContent: "space-between",
-        fontFamily:     "'DM Mono', monospace",
+        fontFamily:     fonts.mono,
         fontSize:       "0.7rem",
-        color:          "#525866",
+        color:          T.textDim,
       }}
     >
       {children}
