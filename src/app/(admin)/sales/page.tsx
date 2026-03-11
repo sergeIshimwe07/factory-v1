@@ -154,11 +154,11 @@ export default function SalesListPage() {
   return (
     <div className="dash-root">
       {/* Page Header */}
-      <div className="sales-header">
+      <div className="page-header">
         <div>
-          <p className="sales-header-eyebrow">Revenue</p>
-          <h1 className="sales-header-title">Sales</h1>
-          <p className="sales-header-subtitle">Manage sales orders and invoices</p>
+          <p className="header-eyebrow">Revenue</p>
+          <h1 className="header-title">Sales</h1>
+          <p className="header-subtitle">Manage sales orders and invoices</p>
         </div>
         {canCreate("sales") && (
           <LuxButton variant="primary" onClick={() => router.push("/sales/new")}>
@@ -169,13 +169,13 @@ export default function SalesListPage() {
       </div>
 
       {/* Panel */}
-      <div className="sales-panel">
+      <div className="panel">
         {/* Panel header */}
-        <div className="sales-panel-header">
-          <div className="sales-panel-title">
-            <span className="sales-panel-title-dot" />
-            <span className="sales-panel-title-text">Sales List</span>
-            {data?.total !== undefined && <span className="sales-record-count">{data.total} records</span>}
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Sales List</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
           </div>
           <LuxButton
             variant={showFilters ? "primary" : "outline"}
@@ -189,8 +189,8 @@ export default function SalesListPage() {
         </div>
 
         {/* Filter panel */}
-        <div className={`sales-filter-panel${showFilters ? " open" : ""}`}>
-          <div className="sales-filter-section">
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
             <div className="sales-filter-grid">
               <LuxInput label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               <LuxInput label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
@@ -207,7 +207,7 @@ export default function SalesListPage() {
         </div>
 
         {/* Table */}
-        <div className="sales-table-container">
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (Sale & Record<string, unknown>)[]}

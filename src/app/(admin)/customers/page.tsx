@@ -3,12 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Eye, Ban, CheckCircle } from "lucide-react";
+import { Plus, Eye, Ban, CheckCircle, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { Customer, PaginatedResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { SearchInput } from "@/components/ui/search-input";
 import { usePermissions } from "@/hooks";
@@ -19,6 +18,8 @@ export default function CustomersPage() {
   const { canCreate } = usePermissions();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = search !== "";
 
   const { data, isLoading } = useQuery<PaginatedResponse<Customer>>({
     queryKey: ["customers", page, search],
@@ -74,11 +75,11 @@ export default function CustomersPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="dash-root">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
-          <p className="text-sm text-slate-500">Manage customer accounts and credit</p>
+          <h1 className="header-title">Customers</h1>
+          <p className="header-subtitle">Manage customer accounts and credit</p>
         </div>
         {canCreate("customers") && (
           <Button onClick={() => router.push("/customers/new")}>
@@ -88,10 +89,25 @@ export default function CustomersPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base">Customer List</CardTitle>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Customer List</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
             <SearchInput
               className="w-64"
               placeholder="Search customers..."
@@ -100,8 +116,8 @@ export default function CustomersPage() {
               onClear={() => setSearch("")}
             />
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (Customer & Record<string, unknown>)[]}
@@ -114,8 +130,8 @@ export default function CustomersPage() {
             onRowClick={(item) => router.push(`/customers/${item.id}`)}
             emptyMessage="No customers found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

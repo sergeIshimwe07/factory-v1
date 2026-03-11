@@ -3,12 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Edit, AlertTriangle } from "lucide-react";
+import { Plus, Edit, AlertTriangle, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { Product, PaginatedResponse, InventoryFilter } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { SearchInput } from "@/components/ui/search-input";
 import { usePermissions } from "@/hooks";
@@ -19,6 +18,8 @@ export default function ProductsListPage() {
   const { canCreate, canEdit } = usePermissions();
   const [filters, setFilters] = useState<InventoryFilter>({ page: 1, limit: 10 });
   const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = Boolean(search || filters.category || filters.minStock || filters.maxStock);
 
   const { data, isLoading } = useQuery<PaginatedResponse<Product>>({
     queryKey: ["products", filters, search],
@@ -84,11 +85,11 @@ export default function ProductsListPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="dash-root">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Products</h1>
-          <p className="text-sm text-slate-500">Manage your product catalog</p>
+          <h1 className="header-title">Products</h1>
+          <p className="header-subtitle">Manage your product catalog</p>
         </div>
         {canCreate("inventory") && (
           <Button onClick={() => router.push("/inventory/products/new")}>
@@ -98,10 +99,25 @@ export default function ProductsListPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base">Product List</CardTitle>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Product List</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
             <SearchInput
               className="w-64"
               placeholder="Search products..."
@@ -110,8 +126,8 @@ export default function ProductsListPage() {
               onClear={() => setSearch("")}
             />
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (Product & Record<string, unknown>)[]}
@@ -123,8 +139,8 @@ export default function ProductsListPage() {
             onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
             emptyMessage="No products found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

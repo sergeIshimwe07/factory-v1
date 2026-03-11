@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { StockMovement, PaginatedResponse, StockMovementFilter } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ export default function StockMovementsPage() {
   const [productSearch, setProductSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = Boolean(productSearch || dateFrom || dateTo || filters.movementType);
 
   const { data, isLoading } = useQuery<PaginatedResponse<StockMovement>>({
     queryKey: ["stock-movements", filters, productSearch],
@@ -86,61 +88,81 @@ export default function StockMovementsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Stock Movements</h1>
-        <p className="text-sm text-slate-500">Track all inventory movements for audit</p>
+    <div className="dash-root">
+      <div className="page-header">
+        <div>
+          <h1 className="header-title">Stock Movements</h1>
+          <p className="header-subtitle">Track all inventory movements for audit</p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-base">Movement Log</CardTitle>
-            <SearchInput
-              className="w-64"
-              placeholder="Search by product..."
-              value={productSearch}
-              onChange={(e) => setProductSearch(e.target.value)}
-              onClear={() => setProductSearch("")}
-            />
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Movement Log</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
           </div>
-        </CardHeader>
-        <div className="border-b border-slate-100 px-6 pb-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">From</label>
-              <Input type="date" className="w-40" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-base">Movement Log</CardTitle>
+              <SearchInput
+                className="w-64"
+                placeholder="Search by product..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                onClear={() => setProductSearch("")}
+              />
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">To</label>
-              <Input type="date" className="w-40" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            <div className="border-b border-slate-100 px-6 pb-4">
+              <div className="flex flex-wrap gap-3 items-end">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">From</label>
+                  <Input type="date" className="w-40" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">To</label>
+                  <Input type="date" className="w-40" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">Type</label>
+                  <select
+                    className="flex h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        movementType: (e.target.value as StockMovementFilter["movementType"]) || undefined,
+                        page: 1,
+                      }))
+                    }
+                  >
+                    <option value="">All Types</option>
+                    <option value="sale">Sale</option>
+                    <option value="production_in">Production In</option>
+                    <option value="production_out">Production Out</option>
+                    <option value="adjustment">Adjustment</option>
+                    <option value="return">Return</option>
+                  </select>
+                </div>
+                <Button size="sm" onClick={applyFilters}>
+                  Apply
+                </Button>
+              </div>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">Type</label>
-              <select
-                className="flex h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    movementType: (e.target.value as StockMovementFilter["movementType"]) || undefined,
-                    page: 1,
-                  }))
-                }
-              >
-                <option value="">All Types</option>
-                <option value="sale">Sale</option>
-                <option value="production_in">Production In</option>
-                <option value="production_out">Production Out</option>
-                <option value="adjustment">Adjustment</option>
-                <option value="return">Return</option>
-              </select>
-            </div>
-            <Button size="sm" onClick={applyFilters}>
-              Apply
-            </Button>
           </div>
         </div>
-        <CardContent>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (StockMovement & Record<string, unknown>)[]}
@@ -152,8 +174,8 @@ export default function StockMovementsPage() {
             onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
             emptyMessage="No stock movements found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
@@ -36,11 +35,16 @@ export default function UsersPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [showDialog, setShowDialog] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = search !== "";
 
   const { data, isLoading } = useQuery<PaginatedResponse<User>>({
-    queryKey: ["users", page],
+    queryKey: ["users", page, search],
     queryFn: async () => {
-      const { data } = await api.get("/users", { params: { page, limit: 10 } });
+      const params: any = { page, limit: 10 };
+      if (search) params.search = search;
+      const { data } = await api.get("/users", { params });
       return data;
     },
   });
@@ -137,32 +141,63 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Users</h1>
-          <p className="text-sm text-slate-500">Manage system users and their roles</p>
+      <div className="dash-root">
+        {/* header */}
+        <div className="page-header">
+          <div>
+            <h1 className="header-title">Users</h1>
+            <p className="header-subtitle">Manage system users and their roles</p>
+          </div>
+          <Button onClick={() => { form.reset(); setShowDialog(true); }}>
+            <Plus className="h-4 w-4" />
+            New User
+          </Button>
         </div>
-        <Button onClick={() => { form.reset(); setShowDialog(true); }}>
-          <Plus className="h-4 w-4" />
-          New User
-        </Button>
-      </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <DataTable
-            columns={columns}
-            data={(data?.data || []) as (User & Record<string, unknown>)[]}
-            isLoading={isLoading}
-            currentPage={page}
-            totalPages={data?.totalPages || 1}
-            totalItems={data?.total}
-            pageSize={10}
-            onPageChange={setPage}
-            emptyMessage="No users found."
-          />
-        </CardContent>
-      </Card>
+        <div className="panel">
+          <div className="panel-header">
+            <div className="panel-title">
+              <span className="panel-title-dot" />
+              <span className="panel-title-text">User List</span>
+              {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+            </div>
+            <Button
+              variant={showFilters ? "primary" : "outline"}
+              size="sm"
+              onClick={() => setShowFilters((v) => !v)}
+            >
+              <SlidersHorizontal size={11} />
+              Filters
+              {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+            </Button>
+          </div>
+          <div className={`filter-panel${showFilters ? " open" : ""}`}>
+            <div className="filter-section">
+              <SearchInput
+                className="w-64"
+                placeholder="Search users..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onClear={() => setSearch("")}
+              />
+            </div>
+          </div>
+          <div className="table-container">
+            <DataTable
+              columns={columns}
+              data={(data?.data || []) as (User & Record<string, unknown>)[]}
+              isLoading={isLoading}
+              currentPage={page}
+              totalPages={data?.totalPages || 1}
+              totalItems={data?.total}
+              pageSize={10}
+              onPageChange={setPage}
+              emptyMessage="No users found."
+            />
+          </div>
+        </div>
+
+        {/* dialog remains unchanged */}
 
       {/* Create User Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

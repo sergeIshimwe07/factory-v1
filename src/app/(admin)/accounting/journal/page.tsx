@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { SlidersHorizontal } from "lucide-react";
 import type { JournalEntry, PaginatedResponse } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { Select } from "@/components/ui/select";
 import { formatCurrency, formatDate } from "@/utils/formatters";
@@ -13,6 +14,8 @@ import { formatCurrency, formatDate } from "@/utils/formatters";
 export default function JournalPage() {
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = Boolean(typeFilter);
 
   const { data, isLoading } = useQuery<PaginatedResponse<JournalEntry>>({
     queryKey: ["journal-entries", page, typeFilter],
@@ -72,27 +75,47 @@ export default function JournalPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Journal Entries</h1>
-        <p className="text-sm text-slate-500">Double-entry accounting ledger</p>
+    <div className="dash-root">
+      <div className="page-header">
+        <div>
+          <h1 className="header-title">Journal Entries</h1>
+          <p className="header-subtitle">Double-entry accounting ledger</p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base">Entries</CardTitle>
-            <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="w-40">
-              <option value="">All Types</option>
-              <option value="sale">Sale</option>
-              <option value="payment">Payment</option>
-              <option value="production">Production</option>
-              <option value="commission">Commission</option>
-              <option value="adjustment">Adjustment</option>
-            </Select>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Entries</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
           </div>
-        </CardHeader>
-        <CardContent>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base">Entries</CardTitle>
+              <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="w-40">
+                <option value="">All Types</option>
+                <option value="sale">Sale</option>
+                <option value="payment">Payment</option>
+                <option value="production">Production</option>
+                <option value="commission">Commission</option>
+                <option value="adjustment">Adjustment</option>
+              </Select>
+            </div>
+          </div>
+        </div>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (JournalEntry & Record<string, unknown>)[]}
@@ -104,8 +127,8 @@ export default function JournalPage() {
             onPageChange={setPage}
             emptyMessage="No journal entries found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

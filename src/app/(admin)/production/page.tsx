@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { ProductionEntry, PaginatedResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { DataTable, type Column } from "@/components/tables";
 import { usePermissions } from "@/hooks";
 import { formatDate, formatNumber } from "@/utils/formatters";
@@ -17,11 +17,16 @@ export default function ProductionPage() {
   const router = useRouter();
   const { canCreate } = usePermissions();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = search !== "";
 
   const { data, isLoading } = useQuery<PaginatedResponse<ProductionEntry>>({
-    queryKey: ["production", page],
+    queryKey: ["production", page, search],
     queryFn: async () => {
-      const { data } = await api.get("/production", { params: { page, limit: 10 } });
+      const params: any = { page, limit: 10 };
+      if (search) params.search = search;
+      const { data } = await api.get("/production", { params });
       return data;
     },
   });
@@ -55,11 +60,11 @@ export default function ProductionPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="dash-root">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Production</h1>
-          <p className="text-sm text-slate-500">Manage production entries</p>
+          <h1 className="header-title">Production</h1>
+          <p className="header-subtitle">Manage production entries</p>
         </div>
         {canCreate("production") && (
           <Button onClick={() => router.push("/production/new")}>
@@ -69,11 +74,35 @@ export default function ProductionPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Production Entries</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Production Entries</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
+            <Input
+              placeholder="Search finished product..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (ProductionEntry & Record<string, unknown>)[]}
@@ -85,8 +114,8 @@ export default function ProductionPage() {
             onPageChange={setPage}
             emptyMessage="No production entries found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

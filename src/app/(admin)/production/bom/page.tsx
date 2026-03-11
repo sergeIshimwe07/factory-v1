@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2, Search, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { BillOfMaterials, PaginatedResponse, Product } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,8 @@ export default function BOMPage() {
   const { canCreate } = usePermissions();
   const { toast } = useToast();
   const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = false; // no filters currently implemented
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [materialSearch, setMaterialSearch] = useState("");
@@ -108,11 +110,11 @@ export default function BOMPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="dash-root">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Bill of Materials</h1>
-          <p className="text-sm text-slate-500">Define raw materials for finished products</p>
+          <h1 className="header-title">Bill of Materials</h1>
+          <p className="header-subtitle">Define raw materials for finished products</p>
         </div>
         {canCreate("production") && (
           <Button onClick={() => setShowCreateForm(!showCreateForm)}>
@@ -240,11 +242,27 @@ export default function BOMPage() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Existing BOMs</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Existing BOMs</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          {/* no filter controls yet */}
+        </div>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (BillOfMaterials & Record<string, unknown>)[]}
@@ -254,8 +272,8 @@ export default function BOMPage() {
             onPageChange={setPage}
             emptyMessage="No BOMs defined yet."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

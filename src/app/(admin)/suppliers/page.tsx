@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { SearchInput } from "@/components/ui/search-input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -36,6 +35,8 @@ export default function SuppliersPage() {
   const [search, setSearch] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = search !== "";
 
   const { data, isLoading } = useQuery<PaginatedResponse<Supplier>>({
     queryKey: ["suppliers", page, search],
@@ -137,11 +138,12 @@ export default function SuppliersPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="dash-root">
+      {/* Page Header */}
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Suppliers</h1>
-          <p className="text-sm text-slate-500">Manage raw material suppliers</p>
+          <h1 className="header-title">Suppliers</h1>
+          <p className="header-subtitle">Manage raw material suppliers</p>
         </div>
         {canCreate("suppliers") && (
           <Button onClick={openCreate}>
@@ -151,10 +153,26 @@ export default function SuppliersPage() {
         )}
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle className="text-base">Supplier List</CardTitle>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Supplier List</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            {/* <SlidersHorizontal size={11} /> */}
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
             <SearchInput
               className="w-64"
               placeholder="Search suppliers..."
@@ -163,8 +181,9 @@ export default function SuppliersPage() {
               onClear={() => setSearch("")}
             />
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (Supplier & Record<string, unknown>)[]}
@@ -176,8 +195,8 @@ export default function SuppliersPage() {
             onPageChange={setPage}
             emptyMessage="No suppliers found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Create / Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -218,6 +237,45 @@ export default function SuppliersPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    {/* Create / Edit Dialog */}
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editingId ? "Edit" : "New"} Supplier</DialogTitle>
+        </DialogHeader>
+        <form
+          onSubmit={form.handleSubmit((data) => saveMutation.mutate(data))}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input {...form.register("name")} error={form.formState.errors.name?.message} placeholder="Supplier name" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input {...form.register("phone")} error={form.formState.errors.phone?.message} placeholder="+1234567890" />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" {...form.register("email")} error={form.formState.errors.email?.message} placeholder="email@example.com" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Address</Label>
+            <Textarea {...form.register("address")} placeholder="Full address" />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeDialog}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={saveMutation.isPending}>
+              {editingId ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  </div>
   );
 }

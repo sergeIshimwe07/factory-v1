@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DollarSign, CheckCircle } from "lucide-react";
+import { DollarSign, CheckCircle, SlidersHorizontal } from "lucide-react";
 import api from "@/lib/api";
 import type { Commission, PaginatedResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
@@ -23,6 +23,8 @@ export default function CommissionsPage() {
   const [page, setPage] = useState(1);
   const [monthFilter, setMonthFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = Boolean(monthFilter || statusFilter);
 
   const isAgent = user?.role === "sales_agent";
 
@@ -108,12 +110,14 @@ export default function CommissionsPage() {
     data?.data?.filter((c) => !c.isPaid).reduce((s, c) => s + c.amount, 0) ?? 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Commissions</h1>
-        <p className="text-sm text-slate-500">
-          {isAgent ? "Your commission earnings" : "Manage agent commissions"}
-        </p>
+    <div className="dash-root">
+      <div className="page-header">
+        <div>
+          <h1 className="header-title">Commissions</h1>
+          <p className="header-subtitle">
+            {isAgent ? "Your commission earnings" : "Manage agent commissions"}
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -154,29 +158,47 @@ export default function CommissionsPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <CardTitle className="text-base">Commission Records</CardTitle>
-            <div className="flex gap-2">
-              <input
-                type="month"
-                className="rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={monthFilter}
-                onChange={(e) => setMonthFilter(e.target.value)}
-              />
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="">All Status</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-              </Select>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title">
+            <span className="panel-title-dot" />
+            <span className="panel-title-text">Commission Records</span>
+            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((v) => !v)}
+          >
+            <SlidersHorizontal size={11} />
+            Filters
+            {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+          </Button>
+        </div>
+        <div className={`filter-panel${showFilters ? " open" : ""}`}>
+          <div className="filter-section">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <CardTitle className="text-base">Commission Records</CardTitle>
+              <div className="flex gap-2">
+                <input
+                  type="month"
+                  className="rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={monthFilter}
+                  onChange={(e) => setMonthFilter(e.target.value)}
+                />
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="">All Status</option>
+                  <option value="paid">Paid</option>
+                  <option value="unpaid">Unpaid</option>
+                </Select>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="table-container">
           <DataTable
             columns={columns}
             data={(data?.data || []) as (Commission & Record<string, unknown>)[]}
@@ -188,8 +210,8 @@ export default function CommissionsPage() {
             onPageChange={setPage}
             emptyMessage="No commission records found."
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
