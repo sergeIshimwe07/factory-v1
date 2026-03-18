@@ -896,6 +896,777 @@ curl -X GET "http://localhost:5000/api/reports/balance-sheet?asOfDate=2026-03-06
 
 ---
 
+## Payments Endpoints
+
+### GET /payments
+List all payments with pagination and filtering.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/payments?page=1&limit=10&customerId=cust_001" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "pay_001",
+      "saleId": "SO-001",
+      "saleInvoice": "INV-2026-001",
+      "customerId": "cust_001",
+      "customerName": "ABC Industries Ltd",
+      "amount": 125000,
+      "method": "bank_transfer",
+      "reference": "TXN-12345",
+      "notes": "Payment for Invoice INV-2026-001",
+      "createdAt": "2026-03-06T10:30:00Z",
+      "createdBy": "John Doe"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 287,
+    "pages": 29
+  }
+}
+```
+
+### POST /payments
+Record a new payment.
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/payments \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "saleId": "SO-001",
+    "amount": 125000,
+    "method": "bank_transfer",
+    "reference": "TXN-12345",
+    "notes": "Full payment received"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "Payment recorded successfully",
+  "data": {
+    "id": "pay_288",
+    "saleId": "SO-001",
+    "amount": 125000,
+    "updatedSaleStatus": "paid"
+  }
+}
+```
+
+### GET /payments/:id
+Get payment details.
+
+**Request:**
+```bash
+curl -X GET http://localhost:5000/api/payments/pay_001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "pay_001",
+    "saleId": "SO-001",
+    "saleInvoice": "INV-2026-001",
+    "customerId": "cust_001",
+    "customerName": "ABC Industries Ltd",
+    "amount": 125000,
+    "method": "bank_transfer",
+    "reference": "TXN-12345",
+    "notes": "Payment for Invoice INV-2026-001",
+    "createdAt": "2026-03-06T10:30:00Z",
+    "createdBy": "John Doe"
+  }
+}
+```
+
+---
+
+## Suppliers Endpoints
+
+### GET /suppliers
+List all suppliers.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/suppliers?page=1&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "sup_001",
+      "name": "Raw Materials Co.",
+      "email": "contact@rawmaterials.com",
+      "phone": "+92-300-1111111",
+      "address": "Industrial Zone, Karachi",
+      "contactPerson": "Ahmed Ali",
+      "status": "active",
+      "totalPurchases": 1250000,
+      "outstandingBalance": 250000
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 45,
+    "pages": 5
+  }
+}
+```
+
+### POST /suppliers
+Create new supplier.
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/suppliers \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "New Supplier Ltd",
+    "email": "contact@newsupplier.com",
+    "phone": "+92-300-2222222",
+    "address": "123 Supply Street",
+    "contactPerson": "Hassan Khan"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "Supplier created successfully",
+  "data": {
+    "id": "sup_046",
+    "name": "New Supplier Ltd"
+  }
+}
+```
+
+### PATCH /suppliers/:id
+Update supplier information.
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:5000/api/suppliers/sup_001 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "phone": "+92-300-9999999",
+    "email": "newemail@rawmaterials.com"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Supplier updated successfully"
+}
+```
+
+---
+
+## Bill of Materials (BOM) Endpoints
+
+### GET /production/bom
+List all BOMs.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/production/bom?page=1&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "bom_001",
+      "finishedProductId": "prod_001",
+      "finishedProductName": "Industrial Motor - 5HP",
+      "items": [
+        {
+          "id": "bom_item_001",
+          "rawMaterialId": "prod_050",
+          "rawMaterialName": "Copper Wire - 2mm",
+          "quantityRequired": 25,
+          "unit": "meters"
+        },
+        {
+          "id": "bom_item_002",
+          "rawMaterialId": "prod_051",
+          "rawMaterialName": "Steel Casing",
+          "quantityRequired": 1,
+          "unit": "piece"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2026-01-15T09:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 28,
+    "pages": 3
+  }
+}
+```
+
+### POST /production/bom
+Create new BOM.
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/production/bom \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "finishedProductId": "prod_001",
+    "items": [
+      {
+        "rawMaterialId": "prod_050",
+        "quantityRequired": 25,
+        "unit": "meters"
+      },
+      {
+        "rawMaterialId": "prod_051",
+        "quantityRequired": 1,
+        "unit": "piece"
+      }
+    ]
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "BOM created successfully",
+  "data": {
+    "id": "bom_029",
+    "finishedProductId": "prod_001"
+  }
+}
+```
+
+### GET /production/bom/:finishedProductId
+Get BOM for a specific finished product.
+
+**Request:**
+```bash
+curl -X GET http://localhost:5000/api/production/bom/prod_001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "bom_001",
+    "finishedProductId": "prod_001",
+    "finishedProductName": "Industrial Motor - 5HP",
+    "items": [
+      {
+        "id": "bom_item_001",
+        "rawMaterialId": "prod_050",
+        "rawMaterialName": "Copper Wire - 2mm",
+        "quantityRequired": 25,
+        "unit": "meters"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Stock Movements Endpoints
+
+### GET /inventory/movements
+Get stock movement history.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/inventory/movements?type=receipt&dateFrom=2026-03-01" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "mov_001",
+      "productId": "prod_001",
+      "productName": "Industrial Motor - 5HP",
+      "type": "receipt",
+      "quantity": 20,
+      "date": "2026-03-06T09:30:00Z",
+      "reference": "PO-125",
+      "notes": "Stock replenishment from supplier",
+      "createdBy": "Store Manager"
+    },
+    {
+      "id": "mov_002",
+      "productId": "prod_001",
+      "productName": "Industrial Motor - 5HP",
+      "type": "issue",
+      "quantity": 5,
+      "date": "2026-03-05T14:20:00Z",
+      "reference": "SO-001",
+      "notes": "Delivered to ABC Industries"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 52,
+    "pages": 6
+  }
+}
+```
+
+### POST /inventory/movements
+Record stock movement.
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/inventory/movements \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "productId": "prod_001",
+    "type": "adjustment",
+    "quantity": 5,
+    "reference": "ADJ-001",
+    "notes": "Stock count adjustment"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "Stock movement recorded successfully",
+  "data": {
+    "id": "mov_053",
+    "productId": "prod_001",
+    "newStock": 47
+  }
+}
+```
+
+---
+
+## Commission Rules Endpoints
+
+### GET /commissions/rules
+List commission rules.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/commissions/rules" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "rule_001",
+      "productId": "prod_001",
+      "productName": "Industrial Motor - 5HP",
+      "type": "percentage",
+      "value": 2.5,
+      "status": "active"
+    },
+    {
+      "id": "rule_002",
+      "productId": "prod_002",
+      "productName": "Control Panel Assembly",
+      "type": "fixed",
+      "value": 5000,
+      "status": "active"
+    }
+  ]
+}
+```
+
+### POST /commissions/rules
+Create commission rule.
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/commissions/rules \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "productId": "prod_001",
+    "type": "percentage",
+    "value": 2.5
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "Commission rule created successfully",
+  "data": {
+    "id": "rule_003",
+    "productId": "prod_001"
+  }
+}
+```
+
+### PATCH /commissions/rules/:id
+Update commission rule.
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:5000/api/commissions/rules/rule_001 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "value": 3.0
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Commission rule updated successfully"
+}
+```
+
+### DELETE /commissions/rules/:id
+Delete commission rule.
+
+**Request:**
+```bash
+curl -X DELETE http://localhost:5000/api/commissions/rules/rule_001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Commission rule deleted successfully"
+}
+```
+
+---
+
+## Additional Customer Endpoints
+
+### PATCH /customers/:id/toggle-block
+Block or unblock a customer.
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:5000/api/customers/cust_001/toggle-block \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Customer blocked successfully",
+  "data": {
+    "id": "cust_001",
+    "isBlocked": true
+  }
+}
+```
+
+### GET /customers/:id
+Get customer details with sales history.
+
+**Request:**
+```bash
+curl -X GET http://localhost:5000/api/customers/cust_001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "cust_001",
+    "name": "ABC Industries Ltd",
+    "email": "contact@abc-ind.com",
+    "phone": "+92-300-1234567",
+    "address": "123 Industrial Park",
+    "creditLimit": 500000,
+    "creditBalance": 125000,
+    "isBlocked": false,
+    "totalSales": 2450000,
+    "totalOrders": 35,
+    "createdAt": "2025-01-15T09:00:00Z"
+  }
+}
+```
+
+---
+
+## Additional Reports Endpoints
+
+### GET /reports/customers
+Generate customer report.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/reports/customers?dateFrom=2026-03-01&dateTo=2026-03-06" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "period": {
+      "from": "2026-03-01",
+      "to": "2026-03-06"
+    },
+    "summary": {
+      "totalCustomers": 287,
+      "activeCustomers": 245,
+      "blockedCustomers": 12,
+      "totalCreditLimit": 125000000,
+      "totalOutstanding": 15250000
+    },
+    "topCustomers": [
+      {
+        "customerId": "cust_001",
+        "name": "ABC Industries Ltd",
+        "totalSales": 2450000,
+        "orderCount": 35,
+        "creditUsed": 125000
+      }
+    ]
+  }
+}
+```
+
+### GET /reports/inventory
+Generate inventory report.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/reports/inventory?category=Machinery" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "totalProducts": 245,
+    "totalValue": 12500000,
+    "lowStockCount": 15,
+    "rows": [
+      {
+        "productId": "prod_001",
+        "productName": "Industrial Motor - 5HP",
+        "category": "Machinery",
+        "currentStock": 42,
+        "minimumStock": 20,
+        "unitCost": 28000,
+        "stockValue": 1176000,
+        "isLowStock": false
+      }
+    ]
+  }
+}
+```
+
+### GET /reports/production
+Generate production report.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/reports/production?dateFrom=2026-03-01&dateTo=2026-03-06" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "period": {
+      "from": "2026-03-01",
+      "to": "2026-03-06"
+    },
+    "summary": {
+      "totalBatches": 45,
+      "totalUnitsProduced": 1250,
+      "totalDefective": 25,
+      "defectiveRate": 2.0
+    },
+    "byProduct": [
+      {
+        "productId": "prod_001",
+        "productName": "Industrial Motor - 5HP",
+        "quantityProduced": 250,
+        "quantityDefective": 5
+      }
+    ]
+  }
+}
+```
+
+### GET /reports/commissions
+Generate commissions report.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/reports/commissions?month=2026-03" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "period": "2026-03",
+    "summary": {
+      "totalCommissions": 210000,
+      "paidCommissions": 125000,
+      "unpaidCommissions": 85000
+    },
+    "byAgent": [
+      {
+        "agentId": "usr_002",
+        "agentName": "John Doe",
+        "totalSales": 1250000,
+        "commissionEarned": 31250,
+        "commissionPaid": 31250,
+        "commissionUnpaid": 0
+      }
+    ]
+  }
+}
+```
+
+### GET /reports/profit-loss
+Generate profit & loss statement.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:5000/api/reports/profit-loss?dateFrom=2026-03-01&dateTo=2026-03-31" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "period": {
+      "from": "2026-03-01",
+      "to": "2026-03-31"
+    },
+    "revenue": {
+      "sales": 2850000,
+      "otherIncome": 50000,
+      "totalRevenue": 2900000
+    },
+    "expenses": {
+      "costOfGoodsSold": 1800000,
+      "operatingExpenses": 450000,
+      "commissions": 85000,
+      "totalExpenses": 2335000
+    },
+    "netProfit": 565000,
+    "profitMargin": 19.48
+  }
+}
+```
+
+---
+
+## Additional User Management Endpoints
+
+### PATCH /users/:id/toggle-active
+Activate or deactivate a user.
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:5000/api/users/usr_002/toggle-active \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "User deactivated successfully",
+  "data": {
+    "id": "usr_002",
+    "isActive": false
+  }
+}
+```
+
+### POST /users/:id/reset-password
+Reset user password (admin only).
+
+**Request:**
+```bash
+curl -X POST http://localhost:5000/api/users/usr_002/reset-password \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "newPassword": "NewSecurePass123"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Password reset successfully"
+}
+```
+
+---
+
 ## Common Error Responses
 
 ### 400 Bad Request

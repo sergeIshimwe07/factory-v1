@@ -7,7 +7,7 @@ import api from "@/lib/api";
 import type { Commission, PaginatedResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/tables";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
