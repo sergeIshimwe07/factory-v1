@@ -155,6 +155,13 @@ export const navigationItems: NavItem[] = [
     href: "/reports",
     icon: "BarChart3",
     module: "reports",
+    children: [
+      { label: "Commissions", href: "/reports/commissions" },
+      { label: "Customers", href: "/reports/customers" },
+      { label: "Inventory", href: "/reports/inventory" },
+      { label: "Production", href: "/reports/production" },
+      { label: "Sales", href: "/reports/sales" },
+    ],
   },
   {
     label: "Users",

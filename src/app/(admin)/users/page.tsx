@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Shield, ShieldOff, Key } from "lucide-react";
+import { Plus, Shield, ShieldOff, Key, SlidersHorizontal } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/tables";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { SearchInput } from "@/components/ui/search-input";
 import { formatDate } from "@/utils/formatters";
 
 const userSchema = z.object({
@@ -159,7 +160,9 @@ export default function UsersPage() {
             <div className="panel-title">
               <span className="panel-title-dot" />
               <span className="panel-title-text">User List</span>
-              {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+              {data?.total !== undefined && (
+                <span className="record-count">{data.total} records</span>
+              )}
             </div>
             <Button
               variant={showFilters ? "primary" : "outline"}
@@ -168,9 +171,20 @@ export default function UsersPage() {
             >
               <SlidersHorizontal size={11} />
               Filters
-              {hasActiveFilters && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />}
+              {hasActiveFilters && (
+                <span
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: "var(--gold)",
+                    display: "inline-block",
+                  }}
+                />
+              )}
             </Button>
           </div>
+
           <div className={`filter-panel${showFilters ? " open" : ""}`}>
             <div className="filter-section">
               <SearchInput
@@ -182,6 +196,7 @@ export default function UsersPage() {
               />
             </div>
           </div>
+
           <div className="table-container">
             <DataTable
               columns={columns}
@@ -196,8 +211,7 @@ export default function UsersPage() {
             />
           </div>
         </div>
-
-        {/* dialog remains unchanged */}
+      </div>
 
       {/* Create User Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -211,11 +225,20 @@ export default function UsersPage() {
           >
             <div className="space-y-2">
               <Label>Full Name</Label>
-              <Input {...form.register("name")} error={form.formState.errors.name?.message} placeholder="John Doe" />
+              <Input
+                {...form.register("name")}
+                error={form.formState.errors.name?.message}
+                placeholder="John Doe"
+              />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input type="email" {...form.register("email")} error={form.formState.errors.email?.message} placeholder="user@company.com" />
+              <Input
+                type="email"
+                {...form.register("email")}
+                error={form.formState.errors.email?.message}
+                placeholder="user@company.com"
+              />
             </div>
             <div className="space-y-2">
               <Label>Role</Label>

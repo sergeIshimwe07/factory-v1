@@ -1,7 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL = "http://127.0.0.1:3658/m1/1215345-1211195-default/api/";
+// const API_BASE_URL = "http://127.0.0.1:3658/m1/1215345-1211195-default/api/";
+const API_BASE_URL = "http://localhost:8081/api/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -67,6 +68,7 @@ api.interceptors.response.use(
 function redirectToLogin() {
   Cookies.remove("accessToken");
   Cookies.remove("refreshToken");
+  localStorage.clear();
   if (typeof window !== "undefined") {
     window.location.href = "/login";
   }
