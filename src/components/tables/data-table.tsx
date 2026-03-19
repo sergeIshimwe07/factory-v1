@@ -230,9 +230,9 @@ export function DataTable<T extends Record<string, unknown>>({
                     className={`lux-row${isClickable ? " clickable" : ""}`}
                     onClick={() => onRowClick?.(item)}
                   >
-                    <span className="lux-row-accent" />
-                    {columns.map((col) => (
-                      <td key={col.key} className={col.className}>
+                    {columns.map((col, colIdx) => (
+                      <td key={col.key} className={col.className} style={{ position: colIdx === 0 ? "relative" : undefined }}>
+                        {colIdx === 0 && <span className="lux-row-accent" />}
                         {col.render ? col.render(item) : (item[col.key] as React.ReactNode)}
                       </td>
                     ))}
