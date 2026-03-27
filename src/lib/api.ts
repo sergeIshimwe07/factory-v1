@@ -56,9 +56,14 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch {
-        redirectToLogin();
+        // redirectToLogin();
         return Promise.reject(error);
       }
+    }
+
+    // Handle 403 - Forbidden
+    if (error.response?.status === 403) {
+      redirectToLogin();
     }
 
     return Promise.reject(error);
@@ -69,7 +74,7 @@ function redirectToLogin() {
   Cookies.remove("accessToken");
   Cookies.remove("refreshToken");
   localStorage.clear();
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.href = "/login";
   }
 }

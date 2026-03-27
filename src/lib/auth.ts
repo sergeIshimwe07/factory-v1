@@ -37,6 +37,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
+        localStorage.clear();
         set({ user: null, isAuthenticated: false });
         if (typeof window !== "undefined") {
           window.location.href = "/login";
