@@ -133,7 +133,7 @@ export default function CustomerDetailPage() {
           <CardTitle className="text-base">Sales History</CardTitle>
         </CardHeader>
         <CardContent>
-          {salesHistory?.data && salesHistory.data.length > 0 ? (
+          {salesHistory?.data && salesHistory?.data?.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -145,7 +145,7 @@ export default function CustomerDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {salesHistory.data.map((sale) => (
+                {salesHistory?.data?.map((sale) => (
                   <TableRow
                     key={sale.id}
                     className="cursor-pointer"

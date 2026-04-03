@@ -222,7 +222,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
             {/* Body */}
             <tbody>
-              {data.map((item, idx) => {
+              {data?.map((item, idx) => {
                 const isClickable = !!onRowClick;
                 return (
                   <tr

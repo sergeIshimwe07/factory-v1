@@ -27,9 +27,13 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  user: User;
-  accessToken: string;
-  refreshToken: string;
+  status: number;
+  data: {
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  };
+  timestamp: string;
 }
 
 // ---- Permissions ----

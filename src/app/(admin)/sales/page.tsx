@@ -175,7 +175,7 @@ export default function SalesListPage() {
           <div className="panel-title">
             <span className="panel-title-dot" />
             <span className="panel-title-text">Sales List</span>
-            {data?.total !== undefined && <span className="record-count">{data.total} records</span>}
+            {data?.total !== undefined && <span className="record-count">{data?.total} records</span>}
           </div>
           <LuxButton
             variant={showFilters ? "primary" : "outline"}
