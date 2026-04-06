@@ -27,7 +27,7 @@ export default function ProductionPage() {
       const params: any = { page, limit: 10 };
       if (search) params.search = search;
       const { data } = await api.get("/production", { params });
-      return data;
+      return data.data;
     },
   });
 

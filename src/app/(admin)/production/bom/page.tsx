@@ -48,26 +48,26 @@ export default function BOMPage() {
     queryKey: ["boms", page],
     queryFn: async () => {
       const { data } = await api.get("/production/bom", { params: { page, limit: 10 } });
-      return data;
+      return data.data;
     },
   });
 
-  const { data: finishedProducts } = useQuery<Product[]>({
+  const { data: finishedProducts = [], isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["finished-search", productSearch],
     queryFn: async () => {
       const { data } = await api.get("/products", { params: { search: productSearch, limit: 10 } });
-      return data.data || data;
+      return data.data.data || [];
     },
-    enabled: productSearch.length > 1,
+    enabled: productSearch.length > 0,
   });
 
-  const { data: rawMaterials } = useQuery<Product[]>({
+  const { data: rawMaterials = [], isLoading: isLoadingMaterials } = useQuery<Product[]>({
     queryKey: ["materials-search", materialSearch],
     queryFn: async () => {
       const { data } = await api.get("/products", { params: { search: materialSearch, limit: 10 } });
-      return data.data || data;
+      return data.data.data || [];
     },
-    enabled: materialSearch.length > 1,
+    enabled: materialSearch.length > 0,
   });
 
   const {
@@ -124,7 +124,7 @@ export default function BOMPage() {
         )}
       </div>
 
-      {showCreateForm && (
+      {(showCreateForm || true) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Create Bill of Materials</CardTitle>
@@ -142,18 +142,29 @@ export default function BOMPage() {
                     value={productSearch}
                     onChange={(e) => { setProductSearch(e.target.value); setShowProductDropdown(true); }}
                     onFocus={() => setShowProductDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowProductDropdown(false), 200)}
                   />
                 </div>
                 {errors.finishedProductId && (
                   <p className="mt-1 text-sm text-red-600">{errors.finishedProductId.message}</p>
                 )}
-                {showProductDropdown && finishedProducts && finishedProducts.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-lg">
-                    {finishedProducts.map((p) => (
+                {showProductDropdown && productSearch.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-lg max-h-48 overflow-y-auto">
+                    {isLoadingProducts && (
+                      <div className="flex items-center justify-center px-4 py-3">
+                        <span className="text-sm text-slate-500">Loading...</span>
+                      </div>
+                    )}
+                    {!isLoadingProducts && finishedProducts.length === 0 && (
+                      <div className="flex items-center justify-center px-4 py-3">
+                        <span className="text-sm text-slate-500">No products found</span>
+                      </div>
+                    )}
+                    {!isLoadingProducts && finishedProducts.length > 0 && finishedProducts.map((p) => (
                       <button
                         type="button"
                         key={p.id}
-                        className="flex w-full px-4 py-2 text-sm hover:bg-slate-50"
+                        className="flex w-full px-4 py-2 text-sm hover:bg-slate-50 border-b last:border-b-0"
                         onClick={() => {
                           setValue("finishedProductId", p.id);
                           setProductSearch(p.name);
@@ -178,14 +189,25 @@ export default function BOMPage() {
                       value={materialSearch}
                       onChange={(e) => { setMaterialSearch(e.target.value); setShowMaterialDropdown(true); }}
                       onFocus={() => setShowMaterialDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowMaterialDropdown(false), 200)}
                     />
-                    {showMaterialDropdown && rawMaterials && rawMaterials.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-lg">
-                        {rawMaterials.map((m) => (
+                    {showMaterialDropdown && materialSearch.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-lg max-h-48 overflow-y-auto">
+                        {isLoadingMaterials && (
+                          <div className="flex items-center justify-center px-4 py-3">
+                            <span className="text-sm text-slate-500">Loading...</span>
+                          </div>
+                        )}
+                        {!isLoadingMaterials && rawMaterials.length === 0 && (
+                          <div className="flex items-center justify-center px-4 py-3">
+                            <span className="text-sm text-slate-500">No materials found</span>
+                          </div>
+                        )}
+                        {!isLoadingMaterials && rawMaterials.length > 0 && rawMaterials.map((m) => (
                           <button
                             type="button"
                             key={m.id}
-                            className="flex w-full px-4 py-2 text-sm hover:bg-slate-50"
+                            className="flex w-full px-4 py-2 text-sm hover:bg-slate-50 border-b last:border-b-0"
                             onClick={() => {
                               append({
                                 rawMaterialId: m.id,

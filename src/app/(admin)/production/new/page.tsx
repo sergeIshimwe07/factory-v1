@@ -11,32 +11,10 @@ import api from "@/lib/api";
 import type { BillOfMaterials, Product } from "@/types";
 import { useToast } from "@/components/ui/toast";
 import { formatNumber } from "@/utils/formatters";
+import { LuxField, LuxInput, LuxButton, SectionCard, luxTokens, luxFonts } from "@/components/ui/lux-components";
 
-// ─── Light mode tokens ────────────────────────────────────────────────────────
-const T = {
-  gold:        "#B5611F",
-  goldLight:   "#C2622D",
-  goldDim:     "rgba(181,97,31,0.08)",
-  goldBorder:  "rgba(181,97,31,0.20)",
-  bg:          "#F5F2EE",
-  surface:     "#FFFFFF",
-  surface2:    "#F9F7F4",
-  surface3:    "#F0EDE8",
-  border:      "rgba(0,0,0,0.07)",
-  text:        "#1C1917",
-  textDim:     "#78716C",
-  textMuted:   "#A8A29E",
-  red:         "#DC2626",
-  amber:       "#B45309",
-  amberDim:    "rgba(180,83,9,0.08)",
-  amberBorder: "rgba(180,83,9,0.20)",
-} as const;
-
-const fonts = {
-  display: "'Cormorant Garamond', serif",
-  mono:    "'DM Mono', monospace",
-  body:    "'Outfit', sans-serif",
-};
+const T = luxTokens;
+const fonts = luxFonts;
 
 const productionSchema = z.object({
   finishedProductId: z.string().min(1, "Select a finished product"),
@@ -45,105 +23,11 @@ const productionSchema = z.object({
 
 type ProductionForm = z.infer<typeof productionSchema>;
 
-// ─── Primitives ───────────────────────────────────────────────────────────────
-function LuxField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{
-        display: "block", fontFamily: fonts.mono, fontSize: "0.58rem",
-        letterSpacing: "0.15em", textTransform: "uppercase", color: T.textMuted, marginBottom: "0.4rem",
-      }}>
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p style={{ fontFamily: fonts.mono, fontSize: "0.58rem", color: T.red, marginTop: "0.3rem", letterSpacing: "0.05em" }}>
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function LuxInput({ placeholder, type = "text", step, min, registerProps }: {
-  placeholder?: string; type?: string; step?: string; min?: number; registerProps?: object;
-}) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <input
-      type={type} placeholder={placeholder} step={step} min={min}
-      {...registerProps}
-      onFocus={(e) => { setFocused(true); (registerProps as any)?.onFocus?.(e); }}
-      onBlur={(e)  => { setFocused(false); (registerProps as any)?.onBlur?.(e); }}
-      style={{
-        width: "100%", background: T.surface, border: `1px solid ${focused ? T.goldBorder : T.border}`,
-        color: T.text, fontFamily: fonts.mono, fontSize: "0.78rem", padding: "0.55rem 0.75rem",
-        outline: "none", transition: "border-color 0.15s",
-      }}
-    />
-  );
-}
-
-function LuxButton({ children, type = "button", variant = "primary", onClick, disabled, isLoading }: {
-  children: React.ReactNode; type?: "button" | "submit" | "reset";
-  variant?: "primary" | "outline"; onClick?: () => void; disabled?: boolean; isLoading?: boolean;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const styles: Record<string, React.CSSProperties> = {
-    primary: {
-      background:  disabled ? T.surface3 : hovered ? "rgba(181,97,31,0.18)" : T.goldDim,
-      borderColor: disabled ? T.border    : hovered ? T.gold               : T.goldBorder,
-      color:       disabled ? T.textMuted : T.gold,
-    },
-    outline: {
-      background:  hovered ? T.surface2 : "transparent",
-      borderColor: hovered ? "rgba(0,0,0,0.15)" : T.border,
-      color:       hovered ? T.text : T.textDim,
-    },
-  };
-  return (
-    <button
-      type={type} onClick={onClick} disabled={disabled || isLoading}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
-        padding: "0.55rem 1.4rem", border: "1px solid transparent",
-        fontFamily: fonts.mono, fontSize: "0.62rem", letterSpacing: "0.12em",
-        textTransform: "uppercase", cursor: disabled ? "not-allowed" : "pointer",
-        transition: "all 0.15s", opacity: disabled ? 0.5 : 1, whiteSpace: "nowrap",
-        ...styles[variant],
-      }}
-    >
-      {isLoading ? (
-        <span style={{ display: "inline-block", width: 12, height: 12, border: `1.5px solid currentColor`, borderTopColor: "transparent", borderRadius: "50%", animation: "lux-spin 0.6s linear infinite" }} />
-      ) : children}
-    </button>
-  );
-}
-
-function SectionCard({ title, dot = T.gold, children }: { title: string; dot?: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderTop: `2px solid ${T.gold}`, overflow: "visible" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.25rem 1.5rem", borderBottom: `1px solid ${T.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
-          <span style={{ fontFamily: fonts.display, fontSize: "1.15rem", fontWeight: 500, color: T.text }}>
-            {title}
-          </span>
-        </div>
-      </div>
-      <div style={{ padding: "1.5rem" }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export default function NewProductionPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [searchText, setSearchText] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(true);
   const [selectedBOM, setSelectedBOM] = useState<BillOfMaterials | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -154,20 +38,20 @@ export default function NewProductionPage() {
 
   const qty = watch("quantityProduced");
 
-  const { data: products } = useQuery<Product[]>({
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["finished-products", searchText],
     queryFn: async () => {
       const { data } = await api.get("/products", { params: { search: searchText, type: "finished", limit: 10 } });
-      return data.data || data;
+      return data.data.data || [];
     },
-    enabled: searchText.length > 1,
+    enabled: searchText.length > 0,
   });
 
   const { data: bom } = useQuery<BillOfMaterials>({
     queryKey: ["bom", selectedProduct?.id],
     queryFn: async () => {
       const { data } = await api.get(`/production/bom/${selectedProduct?.id}`);
-      return data;
+      return data.data;
     },
     enabled: !!selectedProduct?.id,
   });
@@ -260,6 +144,7 @@ export default function NewProductionPage() {
                         value={searchText}
                         onChange={(e) => { setSearchText(e.target.value); setShowDropdown(true); }}
                         onFocus={() => setShowDropdown(true)}
+                        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                         style={{
                           width: "100%", background: T.surface,
                           border: `1px solid ${T.border}`, color: T.text,
@@ -273,9 +158,19 @@ export default function NewProductionPage() {
                     </div>
                   </LuxField>
 
-                  {showDropdown && products && products.length > 0 && (
+                  {showDropdown && searchText.length > 0 && (
                     <div className="lux-dropdown">
-                      {products.map((p) => (
+                      {isLoadingProducts && (
+                        <div style={{ padding: "0.75rem", textAlign: "center", fontSize: "0.82rem", color: T.textMuted }}>
+                          Loading...
+                        </div>
+                      )}
+                      {!isLoadingProducts && products.length === 0 && (
+                        <div style={{ padding: "0.75rem", textAlign: "center", fontSize: "0.82rem", color: T.textMuted }}>
+                          No products found
+                        </div>
+                      )}
+                      {!isLoadingProducts && products.length > 0 && products.map((p) => (
                         <button type="button" key={p.id} className="lux-dropdown-item" onClick={() => selectProduct(p)}>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                             <Package size={12} color={T.textMuted} />

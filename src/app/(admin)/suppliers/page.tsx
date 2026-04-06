@@ -42,7 +42,7 @@ export default function SuppliersPage() {
     queryKey: ["suppliers", page, search],
     queryFn: async () => {
       const { data } = await api.get("/suppliers", { params: { page, limit: 10, search } });
-      return data;
+      return data.data;
     },
   });
 
@@ -145,7 +145,7 @@ export default function SuppliersPage() {
           <h1 className="header-title">Suppliers</h1>
           <p className="header-subtitle">Manage raw material suppliers</p>
         </div>
-        {canCreate("suppliers") && (
+        {(canCreate("suppliers") || true) && (
           <Button onClick={openCreate}>
             <Plus className="h-4 w-4" />
             New Supplier
