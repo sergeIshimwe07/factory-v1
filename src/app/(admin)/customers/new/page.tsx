@@ -34,11 +34,13 @@ const fonts = {
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 const customerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email").or(z.literal("")),
-  phone: z.string().min(1, "Phone is required"),
-  address: z.string(),
-  creditLimit: z.number().min(0, "Must be >= 0"),
+  name: z.string().min(1, "Name is required").max(200, "Name must be max 200 characters"),
+  type: z.enum(["retail", "wholesale", "distributor", "corporate"]),
+  email: z.string().email("Invalid email format").or(z.literal("")).optional(),
+  phone: z.string().max(20, "Phone must be max 20 characters").optional(),
+  address: z.string().optional(),
+  city: z.string().max(100, "City must be max 100 characters").optional(),
+  creditLimit: z.number().min(0, "Must be >= 0").default(0),
 });
 
 type CustomerForm = z.infer<typeof customerSchema>;
@@ -79,6 +81,29 @@ function LuxInput({ placeholder, type = "text", step, registerProps }: {
         outline: "none", transition: "border-color 0.15s",
       }}
     />
+  );
+}
+
+function LuxSelect({ placeholder, options, registerProps }: {
+  placeholder?: string; options: { label: string; value: string }[]; registerProps?: object;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <select
+      {...registerProps}
+      onFocus={(e) => { setFocused(true); (registerProps as any)?.onFocus?.(e); }}
+      onBlur={(e)  => { setFocused(false); (registerProps as any)?.onBlur?.(e); }}
+      style={{
+        width: "100%", background: T.surface, border: `1px solid ${focused ? T.goldBorder : T.border}`,
+        color: T.text, fontFamily: fonts.mono, fontSize: "0.78rem", padding: "0.55rem 0.75rem",
+        outline: "none", transition: "border-color 0.15s", cursor: "pointer",
+      }}
+    >
+      <option value="">{placeholder || "Select an option"}</option>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
   );
 }
 
@@ -224,16 +249,31 @@ export default function NewCustomerPage() {
                 <LuxField label="Full Name" error={errors.name?.message}>
                   <LuxInput placeholder="Customer name" registerProps={register("name")} />
                 </LuxField>
+                <LuxField label="Customer Type" error={errors.type?.message}>
+                  <LuxSelect 
+                    placeholder="Select customer type"
+                    options={[
+                      { label: "Retail", value: "retail" },
+                      { label: "Wholesale", value: "wholesale" },
+                      { label: "Distributor", value: "distributor" },
+                      { label: "Corporate", value: "corporate" },
+                    ]}
+                    registerProps={register("type")}
+                  />
+                </LuxField>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }} className="lux-grid-2">
-                  <LuxField label="Phone" error={errors.phone?.message}>
-                    <LuxInput placeholder="+1234567890" registerProps={register("phone")} />
-                  </LuxField>
                   <LuxField label="Email" error={errors.email?.message}>
                     <LuxInput type="email" placeholder="email@example.com" registerProps={register("email")} />
                   </LuxField>
+                  <LuxField label="Phone" error={errors.phone?.message}>
+                    <LuxInput placeholder="+1-555-0123" registerProps={register("phone")} />
+                  </LuxField>
                 </div>
-                <LuxField label="Address">
+                <LuxField label="Address" error={errors.address?.message}>
                   <LuxTextarea placeholder="Full address" registerProps={register("address")} />
+                </LuxField>
+                <LuxField label="City" error={errors.city?.message}>
+                  <LuxInput placeholder="City name" registerProps={register("city")} />
                 </LuxField>
               </SectionCard>
 

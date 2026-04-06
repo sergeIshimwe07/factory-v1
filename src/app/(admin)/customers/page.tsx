@@ -25,7 +25,7 @@ export default function CustomersPage() {
     queryKey: ["customers", page, search],
     queryFn: async () => {
       const { data } = await api.get("/customers", { params: { page, limit: 10, search } });
-      return data;
+      return data.data;
     },
   });
 
@@ -49,7 +49,7 @@ export default function CustomersPage() {
       render: (item) => {
         const blocked = item.isBlocked as boolean;
         return (
-          <Badge variant={blocked ? "danger" : "success"} className="gap-1">
+          <Badge variant={blocked ? "danger" : "success"} className="gap-1 px-2 py-1">
             {blocked ? <Ban className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
             {blocked ? "Blocked" : "Active"}
           </Badge>

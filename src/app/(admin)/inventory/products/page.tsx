@@ -25,7 +25,7 @@ export default function ProductsListPage() {
     queryKey: ["products", filters, search],
     queryFn: async () => {
       const { data } = await api.get("/products", { params: { ...filters, search } });
-      return data;
+      return data.data;
     },
   });
 
