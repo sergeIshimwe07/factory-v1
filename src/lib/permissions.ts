@@ -123,10 +123,15 @@ export const navigationItems: NavItem[] = [
     ],
   },
   {
-    label: "Suppliers",
+    label: "Supply",
     href: "/suppliers",
     icon: "Truck",
     module: "suppliers",
+    children: [
+      { label: "Suppliers", href: "/supply/suppliers" },
+      { label: "Supply Requests", href: "/suppliers/orders" },
+      { label: "New Requests", href: "/suppliers/orders/new" },
+    ],
   },
   {
     label: "Commissions",

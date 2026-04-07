@@ -18,6 +18,7 @@ const fonts = luxFonts;
 
 const productionSchema = z.object({
   finishedProductId: z.string().min(1, "Select a finished product"),
+  billOfMaterialsId: z.string().min(1, "BOM ID is required"),
   quantityProduced: z.number().min(1, "Must produce at least 1"),
 });
 
@@ -41,7 +42,7 @@ export default function NewProductionPage() {
   const { data: products = [], isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["finished-products", searchText],
     queryFn: async () => {
-      const { data } = await api.get("/products", { params: { search: searchText, type: "finished", limit: 10 } });
+      const { data } = await api.get("/products", { params: { search: searchText, type: "product", limit: 10 } });
       return data.data.data || [];
     },
     enabled: searchText.length > 0,
@@ -57,8 +58,11 @@ export default function NewProductionPage() {
   });
 
   useEffect(() => {
-    if (bom) setSelectedBOM(bom);
-  }, [bom]);
+    if (bom) {
+      setSelectedBOM(bom);
+      setValue("billOfMaterialsId", bom.id);
+    }
+  }, [bom, setValue]);
 
   const mutation = useMutation({
     mutationFn: (data: ProductionForm) => api.post("/production", data),

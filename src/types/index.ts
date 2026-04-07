@@ -69,6 +69,52 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
+  paymentTerms?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RawMaterial {
+  id: string;
+  name: string;
+  unit: string;
+  currentCost: number;
+  minimumOrderQty: number;
+  leadTimeDays: number;
+  supplierId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PurchaseOrderStatus = "draft" | "sent" | "confirmed" | "partial_received" | "received" | "invoiced" | "paid" | "cancelled";
+
+export interface PurchaseOrderItem {
+  id: string;
+  rawMaterialId: string;
+  rawMaterialName: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  minimumOrder: number;
+  leadTime: number;
+  receivedQty?: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  supplierEmail: string;
+  supplierPhone: string;
+  paymentTerms?: string;
+  status: PurchaseOrderStatus;
+  items: PurchaseOrderItem[];
+  deliveryDate: string;
+  notes?: string;
+  proofOfPaymentUrl?: string;
+  invoiceUrl?: string;
+  totalAmount: number;
   createdAt: string;
   updatedAt: string;
 }

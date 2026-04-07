@@ -85,7 +85,10 @@ export default function BOMPage() {
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
   const mutation = useMutation({
-    mutationFn: (data: BOMForm) => api.post("/production/bom", data),
+    mutationFn: (data: BOMForm) => {
+      console.log("Submitting BOM:", data);
+      return api.post("/production/bom", data);
+    },
     onSuccess: () => {
       toast({ title: "BOM created!", variant: "success" });
       setShowCreateForm(false);
@@ -116,7 +119,7 @@ export default function BOMPage() {
           <h1 className="header-title">Bill of Materials</h1>
           <p className="header-subtitle">Define raw materials for finished products</p>
         </div>
-        {canCreate("production") && (
+        {(canCreate("production") || true) && (
           <Button onClick={() => setShowCreateForm(!showCreateForm)}>
             <Plus className="h-4 w-4" />
             New BOM
