@@ -129,8 +129,8 @@ export const navigationItems: NavItem[] = [
     module: "suppliers",
     children: [
       { label: "Suppliers", href: "/supply/suppliers" },
-      { label: "Supply Requests", href: "/suppliers/orders" },
-      { label: "New Requests", href: "/suppliers/orders/new" },
+      { label: "Supply Orders", href: "/supply/requests" },
+      { label: "New Order", href: "/supply/new-order" },
     ],
   },
   {
