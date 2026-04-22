@@ -34,14 +34,16 @@ export default function ProductsListPage() {
     { key: "category", label: "Category" },
     { key: "unit", label: "Unit" },
     {
-      key: "basePrice",
-      label: "Price",
-      render: (item) => formatCurrency(item.basePrice as number),
-    },
-    {
-      key: "costPrice",
-      label: "Cost",
-      render: (item) => formatCurrency(item.costPrice as number),
+      key: "currentPrice",
+      label: "Current Price",
+      render: (item) => {
+        const price = (item as any).currentPrice;
+        if (price) {
+          return formatCurrency(price.amount);
+        }
+        // Fallback to old fields if currentPrice not available
+        return (item as any).basePrice ? formatCurrency((item as any).basePrice) : "No price set";
+      },
     },
     {
       key: "currentStock",

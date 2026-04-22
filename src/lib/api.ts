@@ -79,4 +79,37 @@ function redirectToLogin() {
   }
 }
 
+// Product Price API functions
+export const productPriceApi = {
+  // Get current price for a product
+  getCurrentPrice: (productId: string) =>
+    api.get(`/product-prices/product/${productId}/current`),
+
+  // Get price on specific date
+  getPriceOnDate: (productId: string, date: string) =>
+    api.get(`/product-prices/product/${productId}/on-date`, { params: { date } }),
+
+  // Get price history
+  getPriceHistory: (productId: string) =>
+    api.get(`/product-prices/product/${productId}/history`),
+
+  // Get prices for period
+  getPricesForPeriod: (productId: string, startDate: string, endDate: string) =>
+    api.get(`/product-prices/product/${productId}/period`, { params: { startDate, endDate } }),
+
+  // Create new price
+  createPrice: (data: {
+    productId: number;
+    amount: number;
+    currency?: string;
+    operatorId: number;
+    startDate: string;
+    notes?: string;
+  }) => api.post('/product-prices', data),
+
+  // Get archived prices
+  getArchivedPrices: (productId: string) =>
+    api.get(`/product-prices/product/${productId}/archived`),
+};
+
 export default api;

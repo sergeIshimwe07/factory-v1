@@ -354,6 +354,139 @@ curl -X POST http://localhost:5000/api/products \
 }
 ```
 
+## Product Price Endpoints
+
+### GET /product-prices/product/{productId}/current
+Get current active price for a product.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8081/api/product-prices/product/1/current" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "productId": 1,
+    "startDate": "2026-04-01",
+    "amount": 99.99,
+    "currency": "USD",
+    "status": "ACTIVE",
+    "notes": "Initial price",
+    "operator": {
+      "id": "1",
+      "name": "John Doe"
+    },
+    "createdAt": "2026-04-01T10:00:00Z",
+    "updatedAt": "2026-04-01T10:00:00Z"
+  }
+}
+```
+
+### GET /product-prices/product/{productId}/on-date
+Get price valid on a specific date.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8081/api/product-prices/product/1/on-date?date=2026-03-15" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### GET /product-prices/product/{productId}/history
+Get complete price history for a product.
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8081/api/product-prices/product/1/history" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 2,
+      "productId": 1,
+      "startDate": "2026-04-01",
+      "endDate": null,
+      "amount": 109.99,
+      "currency": "USD",
+      "status": "ACTIVE",
+      "notes": "Price increase",
+      "operator": {
+        "id": "1",
+        "name": "John Doe"
+      },
+      "createdAt": "2026-04-01T10:00:00Z",
+      "updatedAt": "2026-04-01T10:00:00Z"
+    },
+    {
+      "id": 1,
+      "productId": 1,
+      "startDate": "2026-01-01",
+      "endDate": "2026-03-31",
+      "amount": 99.99,
+      "currency": "USD",
+      "status": "EXPIRED",
+      "notes": "Initial price",
+      "operator": {
+        "id": "1",
+        "name": "John Doe"
+      },
+      "createdAt": "2026-01-01T10:00:00Z",
+      "updatedAt": "2026-01-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /product-prices
+Create a new price for a product.
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8081/api/product-prices" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "productId": 1,
+    "amount": 119.99,
+    "currency": "USD",
+    "operatorId": 1,
+    "startDate": "2026-05-01",
+    "notes": "Seasonal price adjustment"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "Price created successfully",
+  "data": {
+    "id": 3,
+    "productId": 1,
+    "startDate": "2026-05-01",
+    "amount": 119.99,
+    "currency": "USD",
+    "status": "ACTIVE",
+    "notes": "Seasonal price adjustment",
+    "operator": {
+      "id": "1",
+      "name": "John Doe"
+    },
+    "createdAt": "2026-04-22T10:00:00Z",
+    "updatedAt": "2026-04-22T10:00:00Z"
+  }
+}
+```
+
 ### GET /inventory/movements
 Get stock movement history.
 

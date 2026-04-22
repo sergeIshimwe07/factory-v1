@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import api from "@/lib/api";
-import { useToast } from "@/components/ui/toast";
+import api, { productPriceApi } from "@/lib/api";
+import { useAuthStore } from "@/lib/auth";
 import { LuxField, LuxInput, LuxSelect, LuxButton, SectionCard, luxTokens, luxFonts } from "@/components/ui/lux-components";
 
 const T = luxTokens;
@@ -18,12 +18,13 @@ const productSchema = z.object({
   name:            z.string().min(1, "Name is required"),
   category:        z.string().min(1, "Category is required"),
   unit:            z.string().min(1, "Unit is required"),
-  costPrice:       z.number().min(0, "Must be ≥ 0"),
-  basePrice:       z.number().min(0, "Must be ≥ 0"),
-  minimumPrice:    z.number().min(0, "Must be ≥ 0"),
   minimumStock:    z.number().min(0, "Must be ≥ 0"),
   commissionType:  z.string().optional(),
   commissionValue: z.number().min(0).optional(),
+  // Initial price fields
+  initialPrice:    z.number().min(0, "Must be ≥ 0"),
+  currency:        z.string().default("USD"),
+  priceNotes:      z.string().optional(),
 });
 
 
@@ -38,14 +39,41 @@ const categoryOptions = [
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuthStore();
 
   const { register, handleSubmit, formState: { errors } } = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { costPrice: 0, basePrice: 0, minimumPrice: 0, minimumStock: 0 },
+    defaultValues: { minimumStock: 0, initialPrice: 0 },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: ProductForm) => api.post("/products", data),
+    mutationFn: async (data: ProductForm) => {
+      // Create product first
+      const productResponse = await api.post("/products", {
+        name: data.name,
+        category: data.category,
+        unit: data.unit,
+        minimumStock: data.minimumStock,
+        commissionType: data.commissionType,
+        commissionValue: data.commissionValue,
+      });
+
+      const product = productResponse.data.data;
+
+      // Create initial price if provided
+      if (data.initialPrice > 0 && user) {
+        await productPriceApi.createPrice({
+          productId: parseInt(product.id),
+          amount: data.initialPrice,
+          currency: data.currency || "USD",
+          operatorId: parseInt(user.id),
+          startDate: new Date().toISOString().split('T')[0], // Today's date
+          notes: data.priceNotes || "Initial price",
+        });
+      }
+
+      return product;
+    },
     onSuccess: () => {
       toast({ title: "Product created successfully!", variant: "success" });
       router.push("/inventory/products");
@@ -89,11 +117,11 @@ export default function CreateProductPage() {
               {/* ── 01 Product Information ── */}
               <SectionCard title="Product Information" subtitle="Basic identification details" index="01">
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }} className="lux-grid-2">
-                  <LuxField label="Product Name" error={errors.name?.message}>
-                    <LuxInput placeholder="Enter product name" registerProps={register("name")} />
-                  </LuxField>
                   <LuxField label="Category" error={errors.category?.message}>
                     <LuxSelect registerProps={register("category")} options={categoryOptions} placeholder="Select category" />
+                  </LuxField>
+                  <LuxField label="Product Name" error={errors.name?.message}>
+                    <LuxInput placeholder="Enter product name" registerProps={register("name")} />
                   </LuxField>
                 </div>
                 <LuxField label="Unit" error={errors.unit?.message}>
@@ -103,28 +131,26 @@ export default function CreateProductPage() {
                 </LuxField>
               </SectionCard>
 
-              {/* ── 02 Pricing ── */}
-              <SectionCard title="Pricing" subtitle="Cost, sale and floor prices" index="02">
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }} className="lux-grid-3">
-                  <LuxField label="Cost Price" error={errors.costPrice?.message}>
-                    <LuxInput type="number" step="0.01" registerProps={register("costPrice", { valueAsNumber: true })} />
+              {/* ── 02 Initial Price ── */}
+              <SectionCard title="Initial Price" subtitle="Set the starting price for this product" index="02">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }} className="lux-grid-2">
+                  <LuxField label="Price Amount" error={errors.initialPrice?.message}>
+                    <LuxInput type="number" step="0.01" placeholder="0.00" registerProps={register("initialPrice", { valueAsNumber: true })} />
                   </LuxField>
-                  <LuxField label="Base Price" error={errors.basePrice?.message}>
-                    <LuxInput type="number" step="0.01" registerProps={register("basePrice", { valueAsNumber: true })} />
-                  </LuxField>
-                  <LuxField label="Minimum Price" error={errors.minimumPrice?.message}>
-                    <LuxInput type="number" step="0.01" registerProps={register("minimumPrice", { valueAsNumber: true })} />
+                  <LuxField label="Currency">
+                    <LuxSelect registerProps={register("currency")}>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                    </LuxSelect>
                   </LuxField>
                 </div>
-
-                {/* Pricing hint row */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", paddingTop: "0.25rem" }}>
-                  {["What you pay", "Default sale price", "Floor — never sell below"].map((hint) => (
-                    <p key={hint} style={{ fontFamily: fonts.mono, fontSize: "0.56rem", letterSpacing: "0.06em", color: T.textMuted }}>
-                      {hint}
-                    </p>
-                  ))}
-                </div>
+                <LuxField label="Price Notes" error={errors.priceNotes?.message}>
+                  <LuxInput placeholder="Optional notes about this price" registerProps={register("priceNotes")} />
+                </LuxField>
+                <p style={{ fontFamily: fonts.mono, fontSize: "0.58rem", letterSpacing: "0.06em", color: T.textMuted, marginTop: "-0.25rem" }}>
+                  You can manage price history and changes after creating the product.
+                </p>
               </SectionCard>
 
               {/* ── 03 Stock Settings ── */}

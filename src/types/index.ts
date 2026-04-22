@@ -122,19 +122,34 @@ export interface PurchaseOrder {
 // ---- Products & Inventory ----
 export type ProductCategory = string;
 
+export type PriceStatus = "ACTIVE" | "EXPIRED" | "SUPERSEDED" | "ARCHIVED";
+
+export interface ProductPrice {
+  id: number;
+  productId: number;
+  startDate: string;
+  endDate?: string;
+  amount: number;
+  currency: string;
+  status: PriceStatus;
+  notes?: string;
+  operator: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   category: ProductCategory;
   unit: string;
-  costPrice: number;
-  basePrice: number;
-  minimumPrice: number;
   currentStock: number;
   minimumStock: number;
   commissionRule?: CommissionRule;
   createdAt: string;
   updatedAt: string;
+  // Current price from ProductPrice system
+  currentPrice?: ProductPrice;
 }
 
 export type MovementType = "sale" | "production_in" | "production_out" | "adjustment" | "return";
